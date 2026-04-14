@@ -1,6 +1,9 @@
 export interface LlmConfig {
   openaiApiKey: string;
+  /** Primary model for planning and code generation (GPT-4o) */
   model: string;
+  /** Light model for code parsing — higher rate limits, lower cost */
+  parserModel: string;
   embeddingModel: string;
   maxTokens: number;
   temperature: number;
@@ -13,6 +16,7 @@ export function loadLlmConfig(): LlmConfig {
   return {
     openaiApiKey: apiKey,
     model: process.env.OPENAI_MODEL ?? 'gpt-4o',
+    parserModel: process.env.OPENAI_PARSER_MODEL ?? 'gpt-4o-mini',
     embeddingModel: process.env.OPENAI_EMBEDDING_MODEL ?? 'text-embedding-3-small',
     maxTokens: parseInt(process.env.LLM_MAX_TOKENS ?? '4096', 10),
     temperature: parseFloat(process.env.LLM_TEMPERATURE ?? '0.2'),

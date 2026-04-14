@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import pLimit from 'p-limit';
 import { RepoManifest } from '../../domain/entities/repo-manifest.entity';
 import { RepositoryAnalysis } from '../../domain/entities/repository-analysis.entity';
 import { DependencyGraph } from '../../domain/entities/dependency-graph.entity';
@@ -17,12 +16,11 @@ export class ParseRepositoryUseCase {
 
   async execute(manifest: RepoManifest): Promise<RepositoryAnalysis> {
     const config = loadAppConfig();
-    const limit = pLimit(config.parseWorkerConcurrency);
+    const concurrency = Math.max(1, config.parseWorkerConcurrency);
 
-    this.logger.log(`Parsing ${manifest.filePaths.length} files with concurrency=${config.parseWorkerConcurrency}`);
+    this.logger.log(`Parsing ${manifest.filePaths.length} files with concurrency=${concurrency}`);
 
-    const tasks = manifest.filePaths.map((filePath) =>
-      limit(async () => {
+    const results = await this.runWithConcurrency(manifest.filePaths, concurrency, async (filePath) => {
         const ext = path.extname(filePath);
         const language = detectLanguageFromExtension(ext);
         const parser = this.parserFactory.getParser(language);
@@ -45,10 +43,9 @@ export class ParseRepositoryUseCase {
           this.logger.error(`Unexpected parse failure for ${filePath}: ${err.message}`);
           return null;
         }
-      }),
+      },
     );
 
-    const results = await Promise.all(tasks);
     const files = results.filter((r) => r !== null);
 
     // Build dependency graph from import relationships
@@ -68,6 +65,29 @@ export class ParseRepositoryUseCase {
     this.logger.log(`Parsed ${files.length}/${manifest.filePaths.length} files successfully`);
 
     return new RepositoryAnalysis(manifest, files, graph, new Date());
+  }
+
+  private async runWithConcurrency<T, R>(
+    items: T[],
+    concurrency: number,
+    worker: (item: T) => Promise<R>,
+  ): Promise<R[]> {
+    if (items.length === 0) return [];
+
+    const results = new Array<R>(items.length);
+    let nextIndex = 0;
+    const workerCount = Math.max(1, Math.min(concurrency, items.length));
+
+    const workerLoop = async (): Promise<void> => {
+      while (true) {
+        const currentIndex = nextIndex++;
+        if (currentIndex >= items.length) return;
+        results[currentIndex] = await worker(items[currentIndex]);
+      }
+    };
+
+    await Promise.all(Array.from({ length: workerCount }, () => workerLoop()));
+    return results;
   }
 
   private resolveImport(fromFile: string, importPath: string, repoRoot: string): string | null {
