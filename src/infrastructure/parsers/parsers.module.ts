@@ -4,7 +4,10 @@ import { TypeScriptParserStrategy } from './typescript/typescript-parser.strateg
 import { GenericLlmParserStrategy } from './generic/generic-llm-parser.strategy';
 import { LanguageParserFactory } from './language-parser.factory';
 
+// GenericLlmParserStrategy now owns its own OpenAI client (gpt-4o-mini),
+// so LlmModule is no longer required here.
 @Module({
+  imports: [],
   providers: [
     TypeScriptParserStrategy,
     GenericLlmParserStrategy,

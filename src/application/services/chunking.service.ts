@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { FileAnalysis, ClassInfo } from '../../domain/entities/file-analysis.entity';
 import { ChunkMetadata, ChunkType } from '../../domain/value-objects/chunk-metadata.vo';
-import { v4 as uuidv4 } from 'uuid';
 
 export interface CodeChunk {
   id: string;
@@ -182,7 +182,7 @@ export class ChunkingService {
   }
 
   private makeChunk(content: string, repoId: string, metadata: Omit<ChunkMetadata, 'chunkId' | 'repoId'>): CodeChunk {
-    const id = uuidv4();
+    const id = randomUUID();
     return {
       id,
       content,
