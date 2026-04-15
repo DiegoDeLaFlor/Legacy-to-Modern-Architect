@@ -24,8 +24,8 @@ Point it at any legacy codebase (Java, PHP, Python, TypeScript, COBOL, etc.) and
 | Runtime                     | Node.js 20+, TypeScript 5            |
 | Framework                   | Nest.js 10                           |
 | Agent Orchestration         | LangGraph.js                         |
-| LLM (planning & generation) | OpenAI GPT-4o                        |
-| LLM (file parsing)          | OpenAI GPT-4o-mini                   |
+| LLM (planning & generation) | OpenAI GPT-4.1                       |
+| LLM (file parsing)          | OpenAI GPT-4.1-mini                  |
 | Embeddings                  | OpenAI text-embedding-3-small        |
 | Vector Store                | PostgreSQL + pgvector                |
 | TypeScript/JS AST           | @typescript-eslint/typescript-estree |
@@ -145,8 +145,8 @@ output/
 | TypeScript / JavaScript | Native AST (`typescript-estree`) | Classes, methods, fields, imports, business rules                  |
 | Java                    | Native CST (`java-parser`)       | Classes, interfaces, methods, fields, annotations, business rules  |
 | PHP                     | Native AST (`php-parser`)        | Classes, traits, interfaces, methods, properties, `use` statements |
-| Python                  | Generic LLM (`gpt-4o-mini`)      | Full structured extraction via prompt                              |
-| COBOL                   | Generic LLM (`gpt-4o-mini`)      | Full structured extraction via prompt                              |
+| Python                  | Generic LLM (`gpt-4.1-mini`)     | Full structured extraction via prompt                              |
+| COBOL                   | Generic LLM (`gpt-4.1-mini`)     | Full structured extraction via prompt                              |
 | C#, Ruby, Go, …         | Generic LLM fallback             | Full structured extraction via prompt                              |
 
 ---
