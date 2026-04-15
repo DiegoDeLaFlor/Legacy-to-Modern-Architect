@@ -19,16 +19,20 @@ Point it at any legacy codebase (Java, PHP, Python, TypeScript, COBOL, etc.) and
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Runtime | Node.js 20+, TypeScript 5 |
-| Framework | Nest.js 10 |
-| Agent Orchestration | LangGraph.js |
-| LLM | OpenAI GPT-4o |
-| Embeddings | OpenAI text-embedding-3-small |
-| Vector Store | PostgreSQL + pgvector |
-| AST Parsing | @typescript-eslint/typescript-estree |
-| CLI | Commander.js |
+| Layer                       | Technology                           |
+| --------------------------- | ------------------------------------ |
+| Runtime                     | Node.js 20+, TypeScript 5            |
+| Framework                   | Nest.js 10                           |
+| Agent Orchestration         | LangGraph.js                         |
+| LLM (planning & generation) | OpenAI GPT-4o                        |
+| LLM (file parsing)          | OpenAI GPT-4o-mini                   |
+| Embeddings                  | OpenAI text-embedding-3-small        |
+| Vector Store                | PostgreSQL + pgvector                |
+| TypeScript/JS AST           | @typescript-eslint/typescript-estree |
+| Java AST                    | java-parser                          |
+| PHP AST                     | php-parser (glayzzle)                |
+| CLI                         | Commander.js                         |
+| Testing                     | Jest + ts-jest                       |
 
 ---
 
@@ -43,17 +47,20 @@ Point it at any legacy codebase (Java, PHP, Python, TypeScript, COBOL, etc.) and
 ## Setup
 
 **1. Install dependencies**
+
 ```bash
 npm install
 ```
 
 **2. Configure environment**
+
 ```bash
 cp .env.example .env
 # Edit .env and add your OPENAI_API_KEY
 ```
 
 **3. Start the database**
+
 ```bash
 docker compose up -d
 ```
@@ -65,16 +72,19 @@ docker compose up -d
 ### As CLI
 
 Migrate a local repository:
+
 ```bash
 npx ts-node src/main.ts migrate ./path/to/legacy-repo --output ./output
 ```
 
 Migrate from a Git URL:
+
 ```bash
 npx ts-node src/main.ts migrate https://github.com/user/legacy-repo --output ./output
 ```
 
 Options:
+
 ```
 --output <dir>     Output directory (default: ./output)
 --retries <n>      Max review/retry cycles (default: 3)
@@ -84,11 +94,13 @@ Options:
 ### As REST API
 
 Start the server:
+
 ```bash
 npm run start:dev
 ```
 
 Start a migration:
+
 ```bash
 curl -X POST http://localhost:3000/api/migrations \
   -H "Content-Type: application/json" \
@@ -96,11 +108,13 @@ curl -X POST http://localhost:3000/api/migrations \
 ```
 
 Poll status:
+
 ```bash
 curl http://localhost:3000/api/migrations/<migrationId>
 ```
 
 Health check:
+
 ```bash
 curl http://localhost:3000/health
 ```
@@ -126,14 +140,14 @@ output/
 
 ## Supported Source Languages
 
-| Language | Parser |
-|----------|--------|
-| TypeScript / JavaScript | AST (typescript-estree) |
-| Java | LLM-assisted |
-| PHP | LLM-assisted |
-| Python | LLM-assisted |
-| COBOL | LLM-assisted |
-| Any other | Generic LLM fallback |
+| Language                | Parser                           | Extraction                                                         |
+| ----------------------- | -------------------------------- | ------------------------------------------------------------------ |
+| TypeScript / JavaScript | Native AST (`typescript-estree`) | Classes, methods, fields, imports, business rules                  |
+| Java                    | Native CST (`java-parser`)       | Classes, interfaces, methods, fields, annotations, business rules  |
+| PHP                     | Native AST (`php-parser`)        | Classes, traits, interfaces, methods, properties, `use` statements |
+| Python                  | Generic LLM (`gpt-4o-mini`)      | Full structured extraction via prompt                              |
+| COBOL                   | Generic LLM (`gpt-4o-mini`)      | Full structured extraction via prompt                              |
+| C#, Ruby, Go, …         | Generic LLM fallback             | Full structured extraction via prompt                              |
 
 ---
 
@@ -149,12 +163,23 @@ npx tsc --noEmit
 # Lint (ESLint with Clean Architecture boundary rules)
 npm run lint
 
-# Tests
-npm run test
+# Unit tests
+npm test
 
-# Watch mode
+# Unit tests with coverage
+npm run test:cov
+
+# Watch mode (development server)
 npm run start:dev
 ```
+
+### Test coverage
+
+| Suite                   | Tests  | Status             |
+| ----------------------- | ------ | ------------------ |
+| `ChunkingService`       | 20     | ✅ Passing         |
+| `LanguageParserFactory` | 11     | ✅ Passing         |
+| **Total**               | **31** | **✅ All passing** |
 
 ---
 
@@ -166,4 +191,4 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full system design, pipeline st
 
 ## Author
 
-Diego De La Flor — AI Developer Senior Portfolio Project
+Diego De La Flor — AI Developer Portfolio Project
