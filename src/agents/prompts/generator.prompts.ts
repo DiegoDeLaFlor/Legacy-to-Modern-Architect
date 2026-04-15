@@ -10,7 +10,7 @@ Return a JSON object with this structure:
   "files": [
     {
       "relativePath": "src/domain/entities/user.entity.ts",
-      "content": "// Full file content here",
+      "content": "export class User {\n  constructor(\n    public readonly id: string,\n    public readonly name: string,\n  ) {}\n}",
       "description": "User domain entity"
     }
   ]
@@ -76,11 +76,17 @@ export function buildGeneratorUserPrompt(
   legacyContext: string,
   contextManifest: string,
   reviewCorrections: string,
+  existingFilePaths: string[] = [],
 ): string {
+  const existingFilesSection = existingFilePaths.length > 0
+    ? `## Already Generated Files — DO NOT recreate these paths\nThe following files were already written by a previous module. Do NOT include them in your response under any circumstance:\n${existingFilePaths.map((p) => `- ${p}`).join('\n')}`
+    : '';
+
   const parts = [
     `## Module Specification\n${modulePlan}`,
     legacyContext ? `## Legacy Source Code Context\n${legacyContext}` : '',
     contextManifest ? `## Already Generated Module Interfaces (do NOT redefine these)\n${contextManifest}` : '',
+    existingFilesSection,
     reviewCorrections ? `## Corrections Required from Previous Generation\n${reviewCorrections}` : '',
     '## Task\nGenerate all files for this Nest.js module following Clean Architecture. Include: entity, repository port, use cases, controller, DTOs, and module file. Translate all business logic from the legacy code. Return ONLY the JSON with files array.',
   ].filter(Boolean);
