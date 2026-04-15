@@ -27,7 +27,15 @@ export class OpenAiLlmAdapter implements ILlmProvider {
       response_format: options?.jsonMode ? { type: 'json_object' } : { type: 'text' },
     });
 
-    return response.choices[0]?.message?.content ?? '';
+    const choice = response.choices[0];
+    if (choice?.finish_reason === 'length') {
+      throw new Error(
+        `LLM response was truncated (finish_reason=length). ` +
+        `Increase maxTokens (current: ${options?.maxTokens ?? this.defaultMaxTokens}) ` +
+        `or reduce the input context.`,
+      );
+    }
+    return choice?.message?.content ?? '';
   }
 
   countTokens(text: string): number {
